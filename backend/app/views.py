@@ -7,14 +7,14 @@ import os
 from . import scraper
 from .models import CourtQuery, CaseDetails
 
-# Define your mock values here (must match frontend defaults)
+# Define  mock values 
 MOCK_CASE_TYPE = "W.P.(C)"
 MOCK_CASE_NUMBER = "1234"
 MOCK_FILING_YEAR = "2023"
 
 @api_view(['GET', 'POST'])
 def fetch_case(request):
-    # GET: return form meta and captcha from scraper as usual
+    # GET: return form meta and captcha from scraper
     if request.method == "GET":
         try:
             form_data = asyncio.run(scraper.fetch_case_form_data())
@@ -59,7 +59,7 @@ def fetch_case(request):
                 }
             }, status=200)
 
-        # Else real submission: just return raw_html from scraper, no parsing
+        # Else real submission:  returned raw_html from scraper
         try:
             res = asyncio.run(scraper.fetch_case_details(case_type, case_number, filing_year, captcha_text))
         except Exception as e:
@@ -67,7 +67,7 @@ def fetch_case(request):
 
         raw_html = res.get("raw_html", "")
 
-        # Store query + raw_html only, parsed_data empty
+        
         q = CourtQuery.objects.create(
             case_type=case_type,
             case_number=case_number,
