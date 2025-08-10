@@ -1,0 +1,64 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+backend/venv/
+# Playwright browsers cache
+playwright/.local-browsers/
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+static/
+
+# VSCode settings
+.vscode/
+
+# Node modules for frontend
+frontend/node_modules/
+
+# Build outputs
+frontend/build/
+frontend/dist/
+
+# dotenv environment variables
+.env
+.env.*
+
+# macOS
+.DS_Store
+
+# pyenv
+.python-version
+
+# Logs
+logs/
+*.log
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+
+# mypy
+.mypy_cache/
+
+# pytest
+.pytest_cache/
+
+# IDEs
+.idea/
+*.sublime-project
+*.sublime-workspace
+

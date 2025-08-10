@@ -1,0 +1,70 @@
+import os
+import asyncio
+from django.conf import settings
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+from . import scraper
+from .models import CourtQuery
+
+# Mock values you define somewhere, e.g.:
+MOCK_CASE_TYPE = "W.P.(C)"
+MOCK_CASE_NUMBER = "1234"
+MOCK_FILING_YEAR = "2023"
+
+@api_view(['GET', 'POST'])
+def fetch_case(request):
+    if request.method == "GET":
+        try:
+            form_data = asyncio.run(scraper.fetch_case_form_data())
+            return Response({
+                "status": "success",
+                "case_types": form_data.get("case_types", []),
+                "years": form_data.get("years", []),
+                "captcha": form_data.get("captcha")
+            }, status=200)
+        except Exception as e:
+            return Response({"status": "error", "message": f"Failed to load form data: {str(e)}"}, status=500)
+
+    if request.method == "POST":
+        payload = request.data
+        case_type = payload.get("case_type")
+        case_number = payload.get("case_number")
+        filing_year = payload.get("filing_year")
+        captcha_text = payload.get("captcha_text")
+
+        if not all([case_type, case_number, filing_year, captcha_text]):
+            return Response({"status": "error", "message": "Missing required fields."}, status=400)
+
+        # Handle mock data submission
+        if (case_type == MOCK_CASE_TYPE and
+            case_number == MOCK_CASE_NUMBER and
+            filing_year == MOCK_FILING_YEAR):
+            mock_path = os.path.join(settings.BASE_DIR, 'mockresult.html')
+            try:
+                with open(mock_path, 'r', encoding='utf-8') as f:
+                    mock_html = f.read()
+            except Exception as e:
+                return Response({"status": "error", "message": f"Failed to load mock result: {str(e)}"}, status=500)
+
+            return Response({
+                "status": "success",
+                "data": {
+                    "raw_html": mock_html
+                }
+            }, status=200)
+
+        # Assuming we know the website rsponse structure
+        try:
+            res = asyncio.run(scraper.fetch_case_details(case_type, case_number, filing_year, captcha_text))
+        except Exception as e:
+            return Response({"status": "error", "message": f"Scraper exception: {str(e)}"}, status=500)
+
+        parties = res.get("parties") or []
+        content = res.get("raw_html", "").lower()
+
+        if not parties or "invalid captcha" in content:
+            return Response({
+                "status": "error",
+                "message": "Invalid CAPTCHA or no matching case found. Please check your inputs."
+
